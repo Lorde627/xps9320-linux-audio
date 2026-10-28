@@ -43,25 +43,6 @@ python3 scripts/install.py uninstall
 
 Original files and service state are restored from `~/.local/state/xps9320-audio/installation`. Backups remain after successful removal. If a managed file has changed since installation, removal stops instead of overwriting your edits. Installation errors trigger a rollback attempt and preserve the original-file backup.
 
-## Optional UCM for physically absent camera/microphone hardware
-
-Do **not** install this on a machine with a working microphone module. On the test machine, probing the nonexistent microphone prevented the stock HiFi profile from loading. The optional override keeps Speaker and HDMI only, and is restricted to board `0V0059`:
-
-```bash
-sudo python3 -I scripts/ucm.py install --no-microphone
-systemctl --user restart wireplumber.service
-python3 scripts/install.py check
-```
-
-The override has a separate backup under `/var/lib/xps9320-audio-ucm`. Remove it separately, only if you installed it:
-
-```bash
-sudo python3 -I scripts/ucm.py remove
-systemctl --user restart wireplumber.service
-```
-
-Normal installation never unbinds devices, resets PCI, edits BIOS settings, or records microphone audio. Rebinding the microphone codec during research removed the machine-card Speaker Switch control; do not repeat that as routine recovery.
-
 ## Verification
 
 ```bash
@@ -81,7 +62,6 @@ This repository contains no original Windows DLL or installer, personal recordin
 - `src/`: the five native LV2 research implementations and required headers.
 - `bundles/`: 48 kHz preset data, LV2 metadata and SHA256 integrity records.
 - `scripts/`: build, prerequisite checks, installation, rollback and volume integration.
-- `ucm/`: the optional speaker-only configuration for physically absent camera/microphone hardware.
 - `tests/`: synthetic input fixtures, deployed-plugin reference hashes, chunking checks and rollback tests.
 
 The research input was Dell's `XPS-13-9320-KP6R0_Win11_1.0_A15.exe` package. The repository ships native source and the small preset data needed by this processing path, rather than the original Windows executable or DLL. See [NOTICE](NOTICE.md) for the distinction between original integration tooling and research-derived materials.
