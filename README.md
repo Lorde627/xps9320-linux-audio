@@ -1,107 +1,91 @@
 # XPS 13 Plus 9320 Linux Audio
 
-Dell XPS 13 Plus **9320** 的 Linux 扬声器 DSP 移植与安装工具。中文说明如下；[English guide](docs/README.en.md)。
+An unofficial Linux speaker DSP port for the Dell XPS 13 Plus **9320**, using the existing SOF / SoundWire kernel drivers, PipeWire, native LV2 plugins and an event-driven volume bridge. This is a user-session processing chain, not a replacement kernel driver or an official Dell/Waves release.
 
-本项目在内核已有的 SOF / SoundWire 驱动之上，通过 PipeWire + LV2 接入研究复刻的扬声器处理链，并让动态处理曲线随 Linux 输出音量变化。**这不是内核驱动替换包，也不是 Dell / Waves 官方发布。**
+## Tested scope
 
-## 当前状态与适用范围
+One XPS 9320, board `0V0059`, with two RT1316 amplifiers; Arch Linux, kernel 7.2.11, SOF firmware 2026.09.2, ALSA UCM 1.2.16.1, PipeWire 1.6.10, WirePlumber 0.5.18, LSP LV2 1.2.35. Only 48 kHz data is shipped. The dynamics plugin targets x86-64-v3, suitable for this machine's Alder Lake CPU.
 
-| 项目 | 状态 |
+| Component | Status |
 | --- | --- |
-| 内置扬声器 | 已在一台 XPS 9320 上完成日常接入与软件验证 |
-| 处理链 | 输入分频 → MaxxBass / 3D 组 → 高频处理 → PEQ → 多段动态 / iVolume → LSP True Peak 限幅 |
-| 采样率 | 本仓库仅提供 **48 kHz** 预设与配置 |
-| 音量联动 | 根据端点实际线性增益更新动态曲线，最终输出音量由端点应用一次 |
-| 麦克风 | 测试机器未安装摄像头/麦克风模组；未验证录音 |
-| 睡眠唤醒、长期实机听音、大音量声学表现 | 尚未完成全面验收 |
-| 其他 XPS 型号、其他主板与扬声器组合 | 未验证，安装器不接受其他机型 |
+| Internal speakers | Integrated and software-validated on one XPS 9320 |
+| Processing chain | Input crossover → bass/3D group → HF → PEQ → multiband dynamics/iVolume → LSP True Peak limiter |
+| Sample rate | 48 kHz presets and configuration |
+| Volume integration | Dynamics curve follows the endpoint's actual gain; final output volume is applied once by the endpoint |
+| Other XPS models and speaker assemblies | Not validated; the installer rejects other models |
 
-测试机器：XPS 9320 / 主板 `0V0059`，双 RT1316 扬声器放大器，Arch Linux，内核 `7.2.11-arch1-1`，SOF firmware `2026.09.2`，ALSA UCM `1.2.16.1`，PipeWire `1.6.10`，WirePlumber `0.5.18`，LSP LV2 `1.2.35`。这些是测试记录，不要求版本必须完全相同。
+## Arch Linux installation
 
-动态插件使用 `x86-64-v3` 编译，适用于本机 Alder Lake CPU。本版需要 Python 3.10+、GCC、LV2 开发头文件、PipeWire、WirePlumber 0.5.10+、Lilv 和 LSP LV2；更早的软件栈没有在本仓库中验证。测试使用 Python 3.14 / GCC 16。
-
-## 安装：Arch Linux
-
-先确认内核已有声卡、两个 RT1316 已附着，系统的 **HiFi Speaker** 输出能够正常出现。本项目的 DSP 安装器不会修复硬件枚举或刷写固件。
-
-安装依赖：
+First establish a working stock **HiFi Speaker** sink. This project does not fix missing hardware or kernel enumeration failures.
 
 ```bash
 sudo pacman -Syu --needed git gcc python lv2 lilv pipewire pipewire-audio pipewire-pulse wireplumber sof-firmware alsa-ucm-conf lsp-plugins-lv2
-```
-
-下载、构建并验证：
-
-```bash
 git clone https://github.com/Lorde627/xps9320-linux-audio.git
 cd xps9320-linux-audio
 python3 scripts/build.py
 python3 -m unittest discover -s tests -v
 python3 scripts/install.py check
 python3 scripts/install.py install --dry-run
-```
-
-确认检查通过后，**以当前桌面用户运行，不加 sudo**：
-
-```bash
 python3 scripts/install.py install
-wpctl status
 ```
 
-安装会短暂重启用户音频服务。它备份原文件，将五个 LV2 插件装入 `~/.lv2`，添加 PipeWire 配置，并启用 `xps9320-volume.service`。**不要再叠加另一套 XPS EQ / 音效配置。**
+Run the DSP installer as your desktop user, **without sudo**. It checks dependencies, backs up replaced files, stops user audio services before replacing libraries, installs five LV2 bundles under `~/.lv2`, adds the PipeWire graph, and enables `xps9320-volume.service`. Audio services restart briefly. Default XDG paths and balanced stereo volume are required in this release.
 
-安装器保留当前正常的左右平衡与输出音量；请先使用左右相等的立体声音量。PipeWire 里的智能滤镜只匹配内置 Speaker，HDMI 和其他输出不使用这套扬声器预设。安装后，在音量界面继续使用内置 Speaker；智能滤镜会插入播放路径。
+Use the physical internal Speaker output normally. WirePlumber's smart filter matches only this speaker. Avoid stacking another XPS EQ/processing chain on it. The volume bridge changes the dynamics curve from the endpoint's actual gain; final volume/mute/balance is still applied by the endpoint once.
 
-如果 `check` 提示没有 HiFi Speaker，先看 [排查说明](docs/troubleshooting.md)。**只有确实未安装摄像头/麦克风模组时**，才使用可选的扬声器专用 UCM；正常装有麦克风的机器不要安装该配置。
+The minimum accepted WirePlumber version is 0.5.10; only the recorded 0.5.18 stack was tested. Python 3.10+, GCC, LV2 development headers, Lilv and LSP LV2 are required. Other distributions are not yet validated.
 
-## 卸载与回滚
-
-在仓库目录，以安装时的桌面用户运行：
+## Uninstall
 
 ```bash
 python3 scripts/install.py uninstall
 ```
 
-原文件备份位于 `~/.local/state/xps9320-audio/installation`；成功卸载后备份以 `removed-<时间>` 保留。如果用户在安装后修改了受管理文件，卸载器会停止，避免覆盖后续修改。安装失败会尝试恢复原文件和原服务状态，并保留备份与错误信息。
+Original files and service state are restored from `~/.local/state/xps9320-audio/installation`. Backups remain after successful removal. If a managed file has changed since installation, removal stops instead of overwriting your edits. Installation errors trigger a rollback attempt and preserve the original-file backup.
 
-可选 UCM 是独立的系统配置；只在安装过它时另行恢复：
+## Optional UCM for physically absent camera/microphone hardware
+
+Do **not** install this on a machine with a working microphone module. On the test machine, probing the nonexistent microphone prevented the stock HiFi profile from loading. The optional override keeps Speaker and HDMI only, and is restricted to board `0V0059`:
+
+```bash
+sudo python3 -I scripts/ucm.py install --no-microphone
+systemctl --user restart wireplumber.service
+python3 scripts/install.py check
+```
+
+The override has a separate backup under `/var/lib/xps9320-audio-ucm`. Remove it separately, only if you installed it:
 
 ```bash
 sudo python3 -I scripts/ucm.py remove
 systemctl --user restart wireplumber.service
 ```
 
-## 验证与已知限制
+Normal installation never unbinds devices, resets PCI, edits BIOS settings, or records microphone audio. Rebinding the microphone codec during research removed the machine-card Speaker Switch control; do not repeat that as routine recovery.
+
+## Verification
 
 ```bash
 python3 scripts/install.py status
 systemctl --user status xps9320-volume.service
 pw-link -l
 pw-top
-```
-
-播放时应看到应用 → `effect_input.xps9320`，以及 `effect_output.xps9320` → 内置 Speaker 的连接。音量联动状态写入 `$XDG_RUNTIME_DIR/xps9320-volume-state.json`。这不是独立音量控制器，不要同时手动调节滤镜节点的音量。
-
-仅测试重建后的插件与完整处理图，不连接声卡、不改变现有音频服务：
-
-```bash
 python3 tests/smoke_pipewire.py
 ```
 
-[验证范围](docs/validation.md)区分了核心数值一致、宿主录音一致和实机验收。限幅器限制数字信号峰值，不能据此声称已经复刻原厂全部热保护、振膜位移保护或 Windows 策略。首次使用从较低音量开始。
+During playback expect application → `effect_input.xps9320` and `effect_output.xps9320` → Speaker links. The smoke test uses an isolated server, freshly built plugins, system LSP and synthetic input, without touching live services or audio hardware. See [validation scope](docs/validation.md) and the [troubleshooting guide](docs/troubleshooting.md).
 
-## 仓库内容与来源
+This repository contains no original Windows DLL or installer, personal recordings, credentials, or private research logs. No Windows installation is required. See [NOTICE](NOTICE.md) for provenance and licensing scope. Digital peak limiting is not a claim of complete speaker thermal or excursion protection; begin listening at a low volume.
 
-- `src/`：五个原生 LV2 插件的研究实现及所需头文件。
-- `bundles/`：48 kHz 参数数据、LV2 元数据及 SHA256 清单。
-- `scripts/`：独立构建、检查、安装、回滚和音量联动工具。
-- `ucm/`：仅供摄像头/麦克风模组物理缺失机器使用的可选配置。
-- `tests/`：合成测试信号、已验证本机插件的输出指纹、分块与回滚测试。
+## Repository contents
 
-本仓库不包含原厂 Windows DLL、驱动安装包、录音、账号凭据或私人研究日志。原厂算法研究参考来自 Dell XPS 9320 驱动包 `XPS-13-9320-KP6R0_Win11_1.0_A15.exe`。本项目不要求安装或启动 Windows。
+- `src/`: the five native LV2 research implementations and required headers.
+- `bundles/`: 48 kHz preset data, LV2 metadata and SHA256 integrity records.
+- `scripts/`: build, prerequisite checks, installation, rollback and volume integration.
+- `ucm/`: the optional speaker-only configuration for physically absent camera/microphone hardware.
+- `tests/`: synthetic input fixtures, deployed-plugin reference hashes, chunking checks and rollback tests.
 
-有关源码与参数数据的区别，见 [NOTICE](NOTICE.md)。
+The research input was Dell's `XPS-13-9320-KP6R0_Win11_1.0_A15.exe` package. The repository ships native source and the small preset data needed by this processing path, rather than the original Windows executable or DLL. See [NOTICE](NOTICE.md) for the distinction between original integration tooling and research-derived materials.
 
-## 反馈
+## Reporting issues
 
-提交 issue 时，请提供机型/主板、发行版、内核、PipeWire/WirePlumber 版本、`install.py check` 输出，以及播放期间的 `pw-link -l` / `pw-top`。不要提交密码、令牌、整段个人日志或录音。
+Include your laptop model and board, distribution, kernel, PipeWire/WirePlumber versions, `scripts/install.py check` output, and `pw-link -l` / `pw-top` observations during playback. Do not attach passwords, tokens, personal recordings or complete private logs.

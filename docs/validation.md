@@ -1,36 +1,36 @@
-# 验证范围
+# Validation scope
 
-## 此仓库可重跑的检查
+## Reproducible checks in this repository
 
-1. `scripts/build.py` 验证参数与 LV2 元数据的 SHA256，构建五个插件。
-2. `tests/test_package.py` 使用固定的合成 4096 帧立体声输入，对照此前已验证的本机插件输出指纹；动态插件涵盖 0、−3.93007922、−6、−20、−40 dB。
-3. 同一输入在 1、31、256、1024、4096 帧分块下结果相同；不支持的 32 kHz 请求被拒绝；插件描述符 URI 与元数据一致。
-4. 文件事务测试覆盖原文件恢复、新文件移除、后续用户修改检测、目录越界/符号链接拒绝，以及模拟处理图启动失败后的安装回滚。
-5. `tests/smoke_pipewire.py` 使用新构建的插件和系统 LSP，在独立的 PipeWire 实例中运行完整图；排除用户 `~/.lv2`，不访问音频硬件、不重启用户音频服务。
+1. `scripts/build.py` verifies SHA256 hashes of the preset data and LV2 metadata, then builds five plugins.
+2. `tests/test_package.py` uses a fixed synthetic 4,096-frame stereo input and compares output hashes against the previously validated deployed plugins. Dynamics controls cover 0, −3.93007922, −6, −20 and −40 dB.
+3. The same input produces identical results with chunks of 1, 31, 256, 1,024 and 4,096 frames. Unsupported 32 kHz requests are rejected, and plugin descriptor URIs must match their metadata.
+4. File transaction tests cover restoration of original files, removal of newly installed files, detection of later user edits, rejection of path traversal and symbolic links, and installation rollback after an injected graph startup failure.
+5. `tests/smoke_pipewire.py` runs the complete graph with freshly built plugins and the system LSP limiter in an isolated PipeWire instance. It excludes the user's `~/.lv2`, does not access audio hardware and does not restart live audio services.
 
-本机发布前结果：9 项测试通过；独立整图捕获 118,784 帧，全部有限，sample peak 0.8891814。这个短测试只验证打包后的图能够工作，不是硬件播放或长时稳定性结论。
+Before publication, all nine tests passed locally. The isolated graph captured 118,784 frames, all finite, with a sample peak of 0.8891814. This short test establishes that the packaged graph works; it is not a hardware playback or long-term stability result.
 
-## 原研究中的证据
+## Evidence from the original research
 
-研究过程中做过下列验证。公开仓库保留必要的合成回归夹具和来源指纹，没有上传整个私人实验目录：
+The following checks were performed during development. This public repository retains the necessary synthetic regression fixtures and source fingerprints, rather than the entire private experiment directory:
 
-- 对齐实际宿主的额外启动静音后，315,904 帧核心输出与原厂入口逐字节一致。标准录音的输入结束排空尾部仍有微小差异；这不等于所有场景的完整录音都位精确。
-- Linux 控制模型使用端点 `volume * max(channelVolumes)`，夹到 −40…0 dB；不把 Linux 界面百分比解释为 Windows 百分比。
-- 实机数字静音测试验证应用 → DSP → Speaker 路由、ERR=0、86% → 85% → 86% 音量/曲线联动和原音量恢复。
-- 五分钟独立实例运行，603 次曲线控制写入全部成功，所有节点错误计数为零，无运行中超过 50 ms 的全零片段，无非有限样本。该测试没有声卡硬件参与。
-- 五分钟测试仅在三个 20 秒摘录中测量 true peak，最大 0.900781（约 −0.908 dBFS），不是全长 true peak 测量。
+- After aligning the actual host's additional startup silence, 315,904 frames of core output matched the original APO entry point byte for byte. The drain tail after input completion in a standard recording still had small differences. This does not establish full-recording bit equality in every scenario.
+- The Linux control model uses endpoint `volume * max(channelVolumes)`, clamped to −40…0 dB. It does not equate Linux UI percentages with Windows UI percentages.
+- A live digital-silence test verified application → DSP → Speaker routing, ERR=0, volume/curve tracking through 86% → 85% → 86%, and restoration of the original volume.
+- A five-minute isolated run completed 603 curve-control writes successfully. All node error counters remained zero, no internal all-zero run exceeded 50 ms, and all samples were finite. No sound-card hardware participated in that test.
+- True peak in the five-minute test was measured only in three 20-second excerpts. The maximum was 0.900781, approximately −0.908 dBFS; this was not a whole-recording true-peak measurement.
 
-## 仍未证明的内容
+## What has not been established
 
-- 睡眠恢复后的完整实机播放验收。
-- 长期真实听音、大音量声学表现、温度或振膜位移保护等价。
-- 功耗/续航收益；此前测到 CPU cycles 改善，不等于已测瓦数。
-- 麦克风录音：测试机器硬件模组未安装。
-- 所有 Windows 运行时预设、通信路径、场景切换及全部音频策略等价。
-- 其他机型、其他声学结构、其他软件版本的兼容性。
+- Complete hardware playback validation after suspend/resume.
+- Long-term listening, high-volume acoustic behavior, or equivalent thermal/excursion protection.
+- Power consumption or battery-life improvements. Reduced CPU cycles are not measured watts.
+- Microphone recording: the test machine's camera/microphone module is physically absent.
+- Equivalence across all Windows runtime presets, communication paths, scene changes and audio policies.
+- Compatibility with other models, acoustic assemblies or software versions.
 
-## 实现细节
+## Implementation details
 
-当前图为 `0.5 → 输入分频 → bass/3D → HF → flat PEQ → 2 → dynamics-linux → LSP True Peak/24`。3D/PEQ 在局部使用 FTZ/DAZ 并恢复调用方浮点环境；动态插件使用 `-O3 -march=x86-64-v3 -ffp-contract=off -fno-fast-math`。
+The current graph is `0.5 → input crossover → bass/3D → HF → flat PEQ → 2 → dynamics-linux → LSP True Peak/24`. The 3D and PEQ stages use FTZ/DAZ locally and restore the caller's floating-point environment. The dynamics plugin is compiled with `-O3 -march=x86-64-v3 -ffp-contract=off -fno-fast-math`.
 
-`docs/source-provenance.json` 记录原研究源文件指纹。公开版本移除了私人路径和过时说明，并让 HF 默认插件 URI 与发布的元数据一致；本仓库的 Git 历史追踪发布后的修改。
+`docs/source-provenance.json` records fingerprints of the original research source files. The public version removes private paths and outdated comments, and makes the HF plugin's default URI match its published metadata. Git history tracks subsequent changes.
