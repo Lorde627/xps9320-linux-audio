@@ -1,0 +1,10 @@
+/build/
+__pycache__/
+*.py[cod]
+*.so
+*.dll
+*.exe
+*.log
+.env
+*.pem
+*.key

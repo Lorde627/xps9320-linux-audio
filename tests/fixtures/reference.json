@@ -1,0 +1,25 @@
+{
+  "input_sha256": "d0afaa5854ae3785454d98bba464f1f9d330dbf5fefae697633163ce6f8121e5",
+  "origin": "Outputs of the previously validated installed Linux bundles on a deterministic, synthetic 4096-frame stereo input. No microphone or music recordings.",
+  "stages": {
+    "input-xover": {
+      "0.0": "622930bb7fde07186b63fabe0836566658eb0c0a84212b19490188656b0daf95"
+    },
+    "3d-group-efficient": {
+      "0.0": "981c8691deb1029094f58f3acdb2a585431d9ce1e6bf32daa6fa9e5c2fd3676d"
+    },
+    "hf-stage": {
+      "0.0": "53749b22d394db02354e6cc55ed47317170f8f09fa70b3dc5f6a21c6d99e48eb"
+    },
+    "flat-peq-efficient": {
+      "0.0": "89d2bb5e865877e4283b2da2a7d35ed94c7000059586ba71e63bbc5df55207f5"
+    },
+    "dynamics-linux": {
+      "0.0": "341e1ae1236eb71a70c2f045e268d406c503aaaabd35242534ae944dee2f8616",
+      "-3.93007922": "d263db9eb848fb61de159ca8732ec16eed366b138dab29035ec3781b8ef0adc9",
+      "-6.0": "b4c698bc074409a69883aeba48d4e52cf13cd90183c12e3c65255a84d939de3b",
+      "-20.0": "e861663a4d91847a9da3d6b519689ea482bbc935334dd71b48210bacdd9a360b",
+      "-40.0": "8538ffae5208ba4741ad1f6ac006b6ecf5eadf387beb8e0e05485fc6661323c2"
+    }
+  }
+}

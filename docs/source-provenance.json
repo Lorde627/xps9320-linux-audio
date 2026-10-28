@@ -1,0 +1,71 @@
+{
+  "origin": "Research implementation derived from the XPS 13 9320 APO processing path; no original DLL or installer included.",
+  "files": {
+    "src/input-xover/xps_xover_lv2.c": {
+      "source_sha256": "6f0b16ee642bdcb23eb61629951263f9295f98bb47269368316aac3f59336a9f"
+    },
+    "src/input-xover/xps_rate.h": {
+      "source_sha256": "c770fb8bf7b0d2a13be4267e857b854d68f13cd2de771fb412fe7fa32240f5a3"
+    },
+    "src/3d-group-efficient/xps_3d_group_lv2.c": {
+      "source_sha256": "aeb85bae6fbdc201d1268ebfaafaa8b74bd113581e4b91605e09f1027332f9ab"
+    },
+    "src/3d-group-efficient/xps_rate.h": {
+      "source_sha256": "c770fb8bf7b0d2a13be4267e857b854d68f13cd2de771fb412fe7fa32240f5a3"
+    },
+    "src/3d-group-efficient/xps_bass_kernel.h": {
+      "source_sha256": "8f7fbac8a7e01b9d8686cb4f492ddb03fcde2a3ee40816f87a40e96dc99f0b71"
+    },
+    "src/3d-group-efficient/native_powf_sse2.h": {
+      "source_sha256": "577cc7e278c65e9f8c932a3bfca5d3ec9b6645af1b5253b631f04d47bae3ffe5"
+    },
+    "src/3d-group-efficient/xps_3d_stage.h": {
+      "source_sha256": "60cd68e388725d093f79317cf88a90a85782179473faff9a0dd726edabd9ab0d"
+    },
+    "src/3d-group-efficient/xps_3d_producer.h": {
+      "source_sha256": "2ff0f9bb7a40025368ea0ffb51c8652645c5775cfedb92e24c18df57020105d1"
+    },
+    "src/3d-group-efficient/xps_3d_kernel.h": {
+      "source_sha256": "825f3f9890d25e920f1734cc0d7b76a6e36d8ebda891c0b7a0eb141071f9b35f"
+    },
+    "src/hf-stage/xps_hf_lv2.c": {
+      "source_sha256": "cbbd0121a288476e94f76607654de3f7e8b463c9c8ea558f046078d34736c499"
+    },
+    "src/hf-stage/xps_rate.h": {
+      "source_sha256": "c770fb8bf7b0d2a13be4267e857b854d68f13cd2de771fb412fe7fa32240f5a3"
+    },
+    "src/hf-stage/xps_hf_kernel.h": {
+      "source_sha256": "8a9321d497b4a7f084d78159f5af0d433c2f6817a2f0250edae41a5224b692f6"
+    },
+    "src/flat-peq-efficient/xps_flat_peq.c": {
+      "source_sha256": "2ce5666fe901818abc330f249cdbd2e84e41a83f6730732a75e6da9fe7e6cc06"
+    },
+    "src/dynamics-linux/xps_linux_dyn.c": {
+      "source_sha256": "411d60f2f34ac77dee0c5de40704c6f891f93732694eb359c5ec5d6cc86134d1"
+    },
+    "src/dynamics-linux/xps_rate.h": {
+      "source_sha256": "c770fb8bf7b0d2a13be4267e857b854d68f13cd2de771fb412fe7fa32240f5a3"
+    },
+    "src/dynamics-linux/xps_ivol_runtime.h": {
+      "source_sha256": "91cf57d0af2a7952f56df3c581ae5410045b7ebebe69d7e684f4288170f69669"
+    },
+    "src/dynamics-linux/xps_ivol_curve.h": {
+      "source_sha256": "b9adde73a9d1f296f646980e3ab006595004a786292a0029f8f55e3b170553a2"
+    },
+    "src/dynamics-linux/native_powf_sse2.h": {
+      "source_sha256": "577cc7e278c65e9f8c932a3bfca5d3ec9b6645af1b5253b631f04d47bae3ffe5"
+    },
+    "src/dynamics-linux/xps_ivol_native.h": {
+      "source_sha256": "4e09d773d37fb7c8d733e04cb6080b29368b6463311b08af040e67753abd31d6"
+    },
+    "src/dynamics-linux/xps_mb_frame_ref.h": {
+      "source_sha256": "10056cf85d9b6bc822f9b0af11aa5cf5c8ffe243a8fd81d2e8c092c0e73576ad"
+    },
+    "src/dynamics-linux/xps_mb_math.h": {
+      "source_sha256": "662d19f1df57d8da22aa05ebc8255dbeb34dc49f10509cac6a367ceb89227bcf"
+    },
+    "src/dynamics-linux/xps_mb_math_tables.h": {
+      "source_sha256": "c2b35b28aaf53ced55eece55dbcebeebc4b4c35cf531425744cc8430c1665dc7"
+    }
+  }
+}
